@@ -110,5 +110,8 @@ npm run preview
 ## 9. Future Jules-Agent Boundaries
 
 When extending this repository in subsequent tasks:
+- **Domain Specifications**: Future backend, database, payment, or search implementation agents MUST adhere strictly to the contracts defined in:
+  - [`docs/domain-model.md`](docs/domain-model.md) — Production domain architecture, ubiquitous language, entity specifications, decoupled inventory, search contracts, and commerce lifecycle.
+  - [`docs/marketplace-contract.md`](docs/marketplace-contract.md) — Multi-seller order splitting, seller data isolation, inventory ownership, commission/settlement models, and non-negotiable invariants.
 - **Do NOT implement**: Backend databases, live OAuth/Auth systems, payment gateways, GST calculation engines, seller dashboards, CMS backends, or automated shipping integrations until explicitly tasked.
 - **Always preserve**: Existing visual composition, typography tokens, image abstractions, and demo data contracts.
