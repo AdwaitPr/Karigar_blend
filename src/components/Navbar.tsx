@@ -87,7 +87,12 @@ export function Navbar({ onSearch, onMenu }: NavbarProps) {
 
           <span aria-hidden="true" className="hidden h-3 w-px bg-current opacity-30 lg:block" />
 
-          <button type="button" onClick={onSearch} className="caps flex h-10 items-center" aria-label="Search">
+          <button
+            type="button"
+            onClick={onSearch}
+            className="caps flex min-h-[44px] items-center px-1"
+            aria-label="Search"
+          >
             <svg
               aria-hidden="true"
               viewBox="0 0 16 16"
@@ -107,7 +112,7 @@ export function Navbar({ onSearch, onMenu }: NavbarProps) {
           <button
             type="button"
             onClick={open}
-            className="caps flex h-10 items-center gap-1.5"
+            className="caps flex min-h-[44px] items-center gap-1.5 px-1"
             aria-label={`Bag, ${count} ${count === 1 ? "item" : "items"}`}
           >
             <span className="link-line">Bag</span>
@@ -120,7 +125,7 @@ export function Navbar({ onSearch, onMenu }: NavbarProps) {
           <button
             type="button"
             onClick={onMenu}
-            className="caps flex h-10 items-center lg:hidden"
+            className="caps flex min-h-[44px] items-center px-1 lg:hidden"
             aria-haspopup="dialog"
           >
             Menu

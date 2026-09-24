@@ -43,9 +43,9 @@ export function Footer() {
                 placeholder="Email address"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="min-w-0 flex-1 bg-transparent py-3 outline-none placeholder:text-paper/40"
+                className="min-w-0 flex-1 bg-transparent py-3 outline-none placeholder:text-paper/60"
               />
-              <button type="submit" className="group caps flex shrink-0 items-center gap-3 py-3">
+              <button type="submit" className="group caps flex min-h-[44px] shrink-0 items-center gap-3 py-3">
                 <span className="link-line">Subscribe</span>
                 <Arrow className="arrow-shift" />
               </button>

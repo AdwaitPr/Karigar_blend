@@ -38,6 +38,8 @@ function ObjectPage({ product, onClose }: { product: Product; onClose: () => voi
   useEffect(() => {
     setPlate(0);
     setJustAdded(false);
+    const panel = document.querySelector(".sheet-panel");
+    if (panel) panel.scrollTop = 0;
   }, [product.id]);
 
   const craft = craftById(product.craftId);
@@ -81,7 +83,11 @@ function ObjectPage({ product, onClose }: { product: Product; onClose: () => voi
           <span className="px-2 opacity-40">/</span>
           <span className="tabular-nums">{pad(products.length)}</span>
         </p>
-        <button type="button" onClick={onClose} className="caps link-line">
+        <button
+          type="button"
+          onClick={onClose}
+          className="caps link-line inline-flex min-h-[44px] min-w-[44px] items-center justify-center"
+        >
           Close
         </button>
       </div>

@@ -101,7 +101,7 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
         <button
           type="button"
           onClick={onAdd}
-          className="caps link-line shrink-0 py-1"
+          className="caps link-line inline-flex min-h-[44px] shrink-0 items-center py-1"
           aria-label={`${actionLabel}: ${product.name}`}
         >
           {actionLabel}
