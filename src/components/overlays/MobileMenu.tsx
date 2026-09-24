@@ -22,7 +22,11 @@ export function MobileMenu({
       <div className="flex min-h-full flex-col px-gutter pb-8">
         <div className="flex h-14 shrink-0 items-center justify-between">
           <span className="font-display text-[1.2rem] leading-none tracking-[0.22em]">KĀRIGAR</span>
-          <button type="button" onClick={onClose} className="caps link-line">
+          <button
+            type="button"
+            onClick={onClose}
+            className="caps link-line inline-flex min-h-[44px] min-w-[44px] items-center justify-center"
+          >
             Close
           </button>
         </div>

@@ -22,11 +22,9 @@ export function Hero() {
     const start = () => {
       if (started) return;
       started = true;
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => {
-          root.dataset.ready = "true";
-        })
-      );
+      requestAnimationFrame(() => {
+        root.dataset.ready = "true";
+      });
     };
     const img = ref.current?.querySelector("img");
     if (!img || (img.complete && img.naturalWidth > 0)) start();
@@ -34,7 +32,7 @@ export function Hero() {
       img.addEventListener("load", start, { once: true });
       img.addEventListener("error", start, { once: true });
     }
-    const safety = window.setTimeout(start, 1600);
+    const safety = window.setTimeout(start, 800);
     return () => window.clearTimeout(safety);
   }, []);
 

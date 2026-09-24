@@ -58,14 +58,14 @@ export default function App() {
 
   return (
     <BagProvider>
-      <a href="#intro" className="skip-link caps">
+      <a href="#main" className="skip-link caps">
         Skip to content
       </a>
 
       <Navbar onSearch={openSearch} onMenu={openMenu} />
 
       <div className="overflow-x-clip">
-        <main id="main">
+        <main id="main" tabIndex={-1} className="outline-none">
           {/* The intro is a page that slides over the sticky hero */}
           <div className="relative">
             <Hero />

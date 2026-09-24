@@ -15,7 +15,11 @@ export function BagDrawer() {
           <p className="caps">
             Bag <span className="tabular-nums text-muted">({count})</span>
           </p>
-          <button type="button" onClick={close} className="caps link-line">
+          <button
+            type="button"
+            onClick={close}
+            className="caps link-line inline-flex min-h-[44px] min-w-[44px] items-center justify-center"
+          >
             Close
           </button>
         </div>
@@ -59,7 +63,7 @@ export function BagDrawer() {
                             <button
                               type="button"
                               onClick={() => setQty(product.id, qty - 1)}
-                              className="flex h-8 w-8 items-center justify-center border border-ink/20 transition-colors hover:border-ink"
+                              className="flex h-11 w-11 items-center justify-center border border-ink/20 transition-colors hover:border-ink"
                               aria-label="Decrease quantity"
                             >
                               −
@@ -68,14 +72,18 @@ export function BagDrawer() {
                             <button
                               type="button"
                               onClick={() => setQty(product.id, qty + 1)}
-                              className="flex h-8 w-8 items-center justify-center border border-ink/20 transition-colors hover:border-ink"
+                              className="flex h-11 w-11 items-center justify-center border border-ink/20 transition-colors hover:border-ink"
                               aria-label="Increase quantity"
                             >
                               +
                             </button>
                           </div>
                         )}
-                        <button type="button" onClick={() => remove(product.id)} className="caps link-line text-muted">
+                        <button
+                          type="button"
+                          onClick={() => remove(product.id)}
+                          className="caps link-line inline-flex min-h-[44px] items-center text-muted"
+                        >
                           Remove
                         </button>
                       </div>

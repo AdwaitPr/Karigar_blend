@@ -25,7 +25,11 @@ export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => 
       <div className="px-gutter pb-12 pt-3 md:pb-16 md:pt-4">
         <div className="flex h-10 items-center justify-between">
           <p className="caps text-muted">Search</p>
-          <button type="button" onClick={onClose} className="caps link-line">
+          <button
+            type="button"
+            onClick={onClose}
+            className="caps link-line inline-flex min-h-[44px] min-w-[44px] items-center justify-center"
+          >
             Close
           </button>
         </div>
@@ -47,7 +51,7 @@ export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => 
             placeholder="Silk, Kutch, a maker’s name…"
             autoComplete="off"
             spellCheck={false}
-            className="w-full bg-transparent pb-4 font-display text-display-md outline-none placeholder:text-ink/30"
+            className="w-full bg-transparent pb-4 font-display text-display-md outline-none placeholder:text-ink/60"
           />
         </form>
 
