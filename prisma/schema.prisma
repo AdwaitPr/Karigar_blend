@@ -1,0 +1,377 @@
+// Kārigar Production Relational Database Schema
+// Source of truth: docs/system-architecture.md, docs/domain-model.md, docs/marketplace-contract.md
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  CUSTOMER
+  ARTISAN_SELLER
+  ADMIN
+  CURATOR
+}
+
+enum ContentSource {
+  DEMO     @map("demo")
+  VERIFIED @map("verified")
+}
+
+enum CraftCategory {
+  TEXTILE
+  WOOD
+  PAINTING
+}
+
+enum AvailabilityStatus {
+  READY         @map("ready")
+  MADE_TO_ORDER @map("made-to-order")
+  ONE_OF_ONE    @map("one-of-one")
+}
+
+enum SellerVerificationStatus {
+  PENDING
+  VERIFIED
+  SUSPENDED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum SellerOrderStatus {
+  PENDING_ACCEPTANCE
+  ACCEPTED
+  IN_CRAFTING
+  READY_FOR_PICKUP
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  phone     String?
+  role      UserRole @default(CUSTOMER)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  customerProfile Customer?
+  sellerProfile   Seller?
+
+  @@map("users")
+}
+
+model Customer {
+  id                       String   @id @default(uuid()) @db.Uuid
+  userId                   String   @unique @map("user_id") @db.Uuid
+  fullName                 String   @map("full_name")
+  defaultShippingAddressId String?  @map("default_shipping_address_id") @db.Uuid
+  createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  addresses Address[]
+  wishlist  Wishlist?
+  orders    Order[]
+
+  @@map("customers")
+}
+
+model Address {
+  id            String   @id @default(uuid()) @db.Uuid
+  customerId    String   @map("customer_id") @db.Uuid
+  recipientName String   @map("recipient_name")
+  addressLine1  String   @map("address_line1")
+  addressLine2  String?  @map("address_line2")
+  city          String
+  state         String
+  postalCode    String   @map("postal_code")
+  country       String   @default("IN")
+  phone         String
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+model Seller {
+  id                        String                   @id @default(uuid()) @db.Uuid
+  userId                    String                   @unique @map("user_id") @db.Uuid
+  legalName                 String                   @map("legal_name")
+  tradeName                 String                   @map("trade_name")
+  gstin                     String?
+  pan                       String
+  bankDetails               Json                     @map("bank_details")
+  verificationStatus        SellerVerificationStatus @default(PENDING) @map("verification_status")
+  commissionRatePercentage Decimal                  @default(15.00) @map("commission_rate_percentage") @db.Decimal(5, 2)
+  createdAt                 DateTime                 @default(now()) @map("created_at") @db.Timestamptz
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artisans     Artisan[]
+  products     Product[]
+  inventories  Inventory[]
+  sellerOrders SellerOrder[]
+
+  @@map("sellers")
+}
+
+model Region {
+  id    String  @id
+  place String
+  state String
+  lat   Decimal @db.Decimal(9, 6)
+  lng   Decimal @db.Decimal(9, 6)
+
+  crafts   Craft[]
+  artisans Artisan[]
+  products Product[]
+
+  @@map("regions")
+}
+
+model Craft {
+  id       String        @id
+  source   ContentSource @default(DEMO)
+  place    String
+  name     String
+  medium   String
+  category CraftCategory
+  regionId String        @map("region_id")
+  material String
+  swatch   Json
+  note     String
+  image    Json
+
+  region   Region    @relation(fields: [regionId], references: [id])
+  artisans Artisan[]
+  products Product[]
+
+  @@map("crafts")
+}
+
+model Artisan {
+  id              String        @id
+  source          ContentSource @default(DEMO)
+  numberLabel     String        @map("number_label")
+  name            String
+  pronoun         String
+  regionId        String        @map("region_id")
+  craftId         String        @map("craft_id")
+  village         String
+  practice        String
+  yearsExperience Int           @map("years_experience")
+  sinceYear       Int           @map("since_year")
+  quote           String?
+  bio             Json?
+  portrait        Json?
+  plateCaption    String?       @map("plate_caption")
+  sellerId        String?       @map("seller_id") @db.Uuid
+
+  region   Region    @relation(fields: [regionId], references: [id])
+  craft    Craft     @relation(fields: [craftId], references: [id])
+  seller   Seller?   @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  products Product[]
+
+  @@map("artisans")
+}
+
+model Product {
+  id                 String             @id
+  source             ContentSource      @default(DEMO)
+  name               String
+  basePricePaise     BigInt             @map("base_price_paise")
+  craftId            String             @map("craft_id")
+  regionId           String             @map("region_id")
+  artisanId          String             @map("artisan_id")
+  sellerId           String             @map("seller_id") @db.Uuid
+  material           String
+  technique          String?
+  craftingTime       String?            @map("crafting_time")
+  dimensions         String?
+  description        String
+  story              String?
+  images             Json
+  detail             Json?
+  framed             Boolean?
+  availabilityStatus AvailabilityStatus @map("availability_status")
+  isPublished        Boolean            @default(true) @map("is_published")
+  createdAt          DateTime           @default(now()) @map("created_at") @db.Timestamptz
+
+  craft      Craft            @relation(fields: [craftId], references: [id])
+  region     Region           @relation(fields: [regionId], references: [id])
+  artisan    Artisan          @relation(fields: [artisanId], references: [id])
+  seller     Seller           @relation(fields: [sellerId], references: [id])
+  variants   ProductVariant[]
+  orderItems OrderItem[]
+
+  @@index([sellerId])
+  @@index([craftId])
+  @@index([regionId])
+  @@map("products")
+}
+
+model ProductVariant {
+  id                   String   @id @default(uuid()) @db.Uuid
+  productId            String   @map("product_id")
+  sku                  String   @unique
+  attributes           Json
+  priceAdjustmentPaise BigInt   @default(0) @map("price_adjustment_paise")
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  inventory  Inventory?
+  orderItems OrderItem[]
+
+  @@map("product_variants")
+}
+
+model Inventory {
+  id                String   @id @default(uuid()) @db.Uuid
+  variantId         String   @unique @map("variant_id") @db.Uuid
+  sellerId          String   @map("seller_id") @db.Uuid
+  stockQuantity     Int      @default(0) @map("stock_quantity")
+  allocatedQuantity Int      @default(0) @map("allocated_quantity")
+  reservedQuantity  Int      @default(0) @map("reserved_quantity")
+  leadTimeDays      Int?     @map("lead_time_days")
+  isAvailable       Boolean  @default(true) @map("is_available")
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  seller  Seller         @relation(fields: [sellerId], references: [id])
+
+  @@index([sellerId])
+  @@map("inventories")
+}
+
+model Order {
+  id              String      @id @default(uuid()) @db.Uuid
+  orderNumber     String      @unique @map("order_number")
+  customerId      String      @map("customer_id") @db.Uuid
+  status          OrderStatus @default(PENDING_PAYMENT)
+  subtotalPaise   BigInt      @map("subtotal_paise")
+  taxPaise        BigInt      @map("tax_paise")
+  shippingPaise   BigInt      @map("shipping_paise")
+  totalPaise      BigInt      @map("total_paise")
+  shippingAddress Json        @map("shipping_address")
+  paymentIntentId String?     @map("payment_intent_id")
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  paidAt          DateTime?   @map("paid_at") @db.Timestamptz
+  cancelledAt     DateTime?   @map("cancelled_at") @db.Timestamptz
+
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  sellerOrders SellerOrder[]
+
+  @@index([customerId])
+  @@index([status])
+  @@map("orders")
+}
+
+model SellerOrder {
+  id                String            @id @default(uuid()) @db.Uuid
+  orderId           String            @map("order_id") @db.Uuid
+  sellerId          String            @map("seller_id") @db.Uuid
+  sellerOrderNumber String            @unique @map("seller_order_number")
+  status            SellerOrderStatus @default(PENDING_ACCEPTANCE)
+  subtotalPaise     BigInt            @map("subtotal_paise")
+  commissionPaise   BigInt            @map("commission_paise")
+  taxPaise          BigInt            @map("tax_paise")
+  sellerPayoutPaise BigInt            @map("seller_payout_paise")
+  waybillNumber     String?           @map("waybill_number")
+  trackingUrl       String?           @map("tracking_url")
+  acceptedAt        DateTime?         @map("accepted_at") @db.Timestamptz
+  shippedAt         DateTime?         @map("shipped_at") @db.Timestamptz
+  deliveredAt       DateTime?         @map("delivered_at") @db.Timestamptz
+  cancelledAt       DateTime?         @map("cancelled_at") @db.Timestamptz
+  refundedAt        DateTime?         @map("refunded_at") @db.Timestamptz
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz
+
+  order  Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  seller Seller      @relation(fields: [sellerId], references: [id])
+  items  OrderItem[]
+
+  @@index([sellerId])
+  @@index([orderId])
+  @@index([status])
+  @@map("seller_orders")
+}
+
+model OrderItem {
+  id                         String @id @default(uuid()) @db.Uuid
+  sellerOrderId              String @map("seller_order_id") @db.Uuid
+  productId                  String @map("product_id")
+  variantId                  String @map("variant_id") @db.Uuid
+  quantity                   Int
+  unitPricePaise             BigInt @map("unit_price_paise")
+  lineSubtotalPaise          BigInt @map("line_subtotal_paise")
+  productNameSnapshot        String @map("product_name_snapshot")
+  variantAttributesSnapshot Json   @map("variant_attributes_snapshot")
+  sellerNameSnapshot         String @map("seller_name_snapshot")
+
+  sellerOrder SellerOrder    @relation(fields: [sellerOrderId], references: [id], onDelete: Cascade)
+  product     Product        @relation(fields: [productId], references: [id])
+  variant     ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@index([sellerOrderId])
+  @@map("order_items")
+}
+
+model Wishlist {
+  id         String   @id @default(uuid()) @db.Uuid
+  customerId String   @unique @map("customer_id") @db.Uuid
+  productIds Json     @map("product_ids")
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("wishlists")
+}
+
+model JournalEntry {
+  id          String        @id
+  source      ContentSource @default(DEMO)
+  indexLabel  String        @map("index_label")
+  kind        String
+  minutes     Int
+  title       String
+  excerpt     String
+  image       Json
+  publishedAt DateTime      @default(now()) @map("published_at") @db.Timestamptz
+
+  @@map("journal_entries")
+}
+
+model Collection {
+  id          String   @id
+  title       String
+  description String
+  productIds  Json     @map("product_ids")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("collections")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  action     String
+  actorId    String?  @map("actor_id")
+  changes    Json
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
